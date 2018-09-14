@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28010.2019
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaClient", "KafkaClient\KafkaClient.csproj", "{90D31483-E877-4732-A275-231EAB85950E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaProducer", "KafkaProducer\KafkaProducer.csproj", "{607AA1A6-BAA8-453C-95DA-A76E4B5C246D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{90D31483-E877-4732-A275-231EAB85950E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{90D31483-E877-4732-A275-231EAB85950E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{90D31483-E877-4732-A275-231EAB85950E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{90D31483-E877-4732-A275-231EAB85950E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{607AA1A6-BAA8-453C-95DA-A76E4B5C246D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{607AA1A6-BAA8-453C-95DA-A76E4B5C246D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{607AA1A6-BAA8-453C-95DA-A76E4B5C246D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{607AA1A6-BAA8-453C-95DA-A76E4B5C246D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {82657E75-058C-4359-B8E3-5F3B5C4A6034}
+	EndGlobalSection
+EndGlobal
