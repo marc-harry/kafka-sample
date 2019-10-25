@@ -1,9 +1,7 @@
 ﻿using Confluent.Kafka;
-using Confluent.Kafka.Serialization;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 
 namespace KafkaProducer
 {
@@ -11,13 +9,17 @@ namespace KafkaProducer
     {
         static void Main(string[] args)
         {
-            string topicName = "testTopik";
+            const string topicName = "test-topic";
 
-            var config = new Dictionary<string, object> { { "bootstrap.servers", "127.0.0.1" } };
+            var config = new List<KeyValuePair<string, string>>
+                {new KeyValuePair<string, string>("bootstrap.servers", "127.0.0.1")};
 
-            using (var producer = new Producer<string, string>(config, new StringSerializer(Encoding.UTF8), new StringSerializer(Encoding.UTF8)))
+            using (var producer = new ProducerBuilder<string, string>(config)
+                .SetKeySerializer(Serializers.Utf8)
+                .SetValueSerializer(Serializers.Utf8)
+                .Build())
             {
-                Console.WriteLine("\n-----------------------------------------------------------------------");
+                Console.WriteLine("-----------------------------------------------------------------------");
                 Console.WriteLine($"Producer {producer.Name} producing on topic {topicName}.");
                 Console.WriteLine("-----------------------------------------------------------------------");
                 Console.WriteLine("To create a kafka message with UTF-8 encoded key and value:");
@@ -54,10 +56,10 @@ namespace KafkaProducer
                     }
 
                     string key = null;
-                    string val = text;
+                    var val = text;
 
                     // split line if both key and value specified.
-                    int index = text.IndexOf(" ");
+                    var index = text.IndexOf(" ", StringComparison.Ordinal);
                     if (index != -1)
                     {
                         key = text.Substring(0, index);
@@ -68,18 +70,19 @@ namespace KafkaProducer
                     // block until it completes. Generally, you should avoid producing
                     // synchronously because this has a huge impact on throughput. For this
                     // interactive console example though, it's what we want.
-                    var deliveryReport = producer.ProduceAsync(topicName, key, val).Result;
-                    Console.WriteLine(
-                        deliveryReport.Error.Code == ErrorCode.NoError
-                            ? $"delivered to: {deliveryReport.TopicPartitionOffset}"
-                            : $"failed to deliver message: {deliveryReport.Error.Reason}"
-                    );
+                    producer.Produce(topicName, new Message<string, string> {Key = key, Value = val},
+                        r =>
+                        {
+                            Console.WriteLine(
+                                r.Error.Code == ErrorCode.NoError
+                                    ? $"delivered to: {r.TopicPartitionOffset}"
+                                    : $"failed to deliver message: {r.Error.Reason}"
+                            );
+                        });
+
                 }
 
-                // Since we are producing synchronously, at this point there will be no messages
-                // in flight and no delivery reports waiting to be acknowledged, so there is no
-                // need to call producer.Flush before disposing the producer, as you typically 
-                // would.
+                producer.Flush();
             }
         }
     }

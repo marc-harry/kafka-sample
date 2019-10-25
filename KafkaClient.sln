@@ -7,6 +7,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaClient", "KafkaClient\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaProducer", "KafkaProducer\KafkaProducer.csproj", "{607AA1A6-BAA8-453C-95DA-A76E4B5C246D}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "KafkaResources", "KafkaResources", "{D3BF3B1F-7950-4F7A-B53C-6CEE1CE10210}"
+ProjectSection(SolutionItems) = preProject
+	KafkaResources\docker-compose.yml = KafkaResources\docker-compose.yml
+EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
