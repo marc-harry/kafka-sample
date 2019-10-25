@@ -18,7 +18,7 @@ namespace KafkaClient
             var config = new ConsumerConfig
             {
                 BootstrapServers = GeneralConfiguration.BootstrapServer,
-                GroupId = "csharp-consumer",
+                GroupId = "review-processor",
                 EnableAutoCommit = false,
                 StatisticsIntervalMs = 60000,
                 SessionTimeoutMs = 6000,
@@ -30,14 +30,15 @@ namespace KafkaClient
                 .SetValueDeserializer(new AvroDeserializer<Review>(schemaRegistry).AsSyncOverAsync())
                 .Build())
             {
-                consumer.Subscribe("test-topic-reviews");
+                consumer.Subscribe(TopicNames.NewReviews.GetDescription());
                 
                 var cts = new CancellationTokenSource();
                 Console.CancelKeyPress += (_, e) => {
                     e.Cancel = true; // prevent the process from terminating.
                     cts.Cancel();
                 };
-                
+
+                var count = 0;
                 try
                 {
                     while (true)
@@ -46,9 +47,12 @@ namespace KafkaClient
                         {
                             var cr = consumer.Consume(cts.Token);
                             Console.WriteLine($"Consumed message '{cr.Value.Title}' at: '{cr.TopicPartitionOffset}'.");
+                            count++;
 
-                            // if you want to persist where you are in the stream use
-                            // consumer.Commit(cr);
+                            // Commit every 10 reviews
+                            if (count != 10) continue;
+                            consumer.Commit(cr);
+                            count = 0;
                         }
                         catch (ConsumeException e)
                         {
