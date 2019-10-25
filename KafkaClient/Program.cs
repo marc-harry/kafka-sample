@@ -6,8 +6,6 @@ namespace KafkaClient
 {
     class Program
     {
-        private static string[] topics = new string[] { "test-topic" };
-
         static void Main(string[] args)
         {
             Console.WriteLine("Hello World!");
@@ -26,7 +24,7 @@ namespace KafkaClient
             {
                 consumer.Subscribe("test-topic");
                 
-                CancellationTokenSource cts = new CancellationTokenSource();
+                var cts = new CancellationTokenSource();
                 Console.CancelKeyPress += (_, e) => {
                     e.Cancel = true; // prevent the process from terminating.
                     cts.Cancel();
