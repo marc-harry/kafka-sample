@@ -12,7 +12,7 @@ namespace KafkaClient
 
             var config = new ConsumerConfig
             {
-                BootstrapServers = "127.0.0.1",
+                BootstrapServers = "localhost:9092",
                 GroupId = "csharp-consumer",
                 EnableAutoCommit = false,
                 StatisticsIntervalMs = 60000,
@@ -38,8 +38,7 @@ namespace KafkaClient
                         {
                             var cr = consumer.Consume(cts.Token);
                             Console.WriteLine($"Consumed message '{cr.Value}' at: '{cr.TopicPartitionOffset}'.");
-                            
-                            
+
                             // if you want to persist where you are in the stream use
                             // consumer.Commit(cr);
                         }

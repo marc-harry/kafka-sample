@@ -12,8 +12,13 @@ namespace KafkaProducer
             const string topicName = "test-topic";
 
             var config = new List<KeyValuePair<string, string>>
-                {new KeyValuePair<string, string>("bootstrap.servers", "127.0.0.1")};
+                {new KeyValuePair<string, string>("bootstrap.servers", "localhost:9092")};
 
+            Action<DeliveryReport<string, string>> handler = r => 
+                Console.WriteLine(!r.Error.IsError
+                    ? $"Delivered message to {r.TopicPartitionOffset}"
+                    : $"Delivery Error: {r.Error.Reason}");
+            
             using (var producer = new ProducerBuilder<string, string>(config)
                 .SetKeySerializer(Serializers.Utf8)
                 .SetValueSerializer(Serializers.Utf8)
@@ -66,20 +71,7 @@ namespace KafkaProducer
                         val = text.Substring(index + 1);
                     }
 
-                    // Calling .Result on the asynchronous produce request below causes it to
-                    // block until it completes. Generally, you should avoid producing
-                    // synchronously because this has a huge impact on throughput. For this
-                    // interactive console example though, it's what we want.
-                    producer.Produce(topicName, new Message<string, string> {Key = key, Value = val},
-                        r =>
-                        {
-                            Console.WriteLine(
-                                r.Error.Code == ErrorCode.NoError
-                                    ? $"delivered to: {r.TopicPartitionOffset}"
-                                    : $"failed to deliver message: {r.Error.Reason}"
-                            );
-                        });
-
+                    producer.Produce(topicName, new Message<string, string> {Key = key, Value = val}, handler);
                 }
 
                 producer.Flush();

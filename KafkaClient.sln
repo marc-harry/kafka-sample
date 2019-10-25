@@ -10,7 +10,11 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "KafkaResources", "KafkaResources", "{D3BF3B1F-7950-4F7A-B53C-6CEE1CE10210}"
 ProjectSection(SolutionItems) = preProject
 	KafkaResources\docker-compose.yml = KafkaResources\docker-compose.yml
+	KafkaResources\udemy-review.avsc = KafkaResources\udemy-review.avsc
+	README.md = README.md
 EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kafka.Common", "Kafka.Common\Kafka.Common.csproj", "{55C32126-D779-4E25-9995-3AE2421A0641}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -26,6 +30,10 @@ Global
 		{607AA1A6-BAA8-453C-95DA-A76E4B5C246D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{607AA1A6-BAA8-453C-95DA-A76E4B5C246D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{607AA1A6-BAA8-453C-95DA-A76E4B5C246D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{55C32126-D779-4E25-9995-3AE2421A0641}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{55C32126-D779-4E25-9995-3AE2421A0641}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{55C32126-D779-4E25-9995-3AE2421A0641}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{55C32126-D779-4E25-9995-3AE2421A0641}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
