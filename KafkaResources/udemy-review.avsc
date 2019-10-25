@@ -1,0 +1,34 @@
+[
+  {"namespace": "Udemy",
+    "type": "record",
+    "name": "User",
+    "fields": [
+      {"name": "Title",  "type": "string"},
+      {"name": "Name",  "type": "string", "doc": "first name"},
+      {"name": "DisplayName",  "type": "string"}
+    ]
+  },
+  {"namespace": "Udemy",
+    "type": "record",
+    "name": "Course",
+    "fields": [
+      {"name": "Id", "type": "long", "doc": "Course ID in Udemy's DB"},
+      {"name": "Title",  "type": "string" },
+      {"name": "Url",  "type": "string" }
+    ]
+  },
+  {"namespace": "Udemy",
+    "type": "record",
+    "name": "Review",
+    "fields": [
+      {"name": "Id", "type": "long", "doc": "Review ID as per Udemy's db" },
+      {"name": "Title", "type": ["null", "string"], "default": null },
+      {"name": "Content", "type": ["null", "string"], "default": null, "doc": "Review text if provided" },
+      {"name": "Rating", "type": "string", "doc": "review value"},
+      {"name": "Created",  "type": { "type" : "long", "logicalType" : "timestamp-millis" } },
+      {"name": "Modified",  "type": { "type" : "long", "logicalType" : "timestamp-millis" } },
+      {"name": "User", "type": "Udemy.User"},
+      {"name": "Course", "type": "Udemy.Course"}
+    ]
+  }
+]

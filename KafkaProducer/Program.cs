@@ -2,6 +2,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
+using Confluent.SchemaRegistry;
+using Confluent.SchemaRegistry.Serdes;
+using Kafka.Common.Configuration;
+using Udemy;
 
 namespace KafkaProducer
 {
@@ -9,19 +14,16 @@ namespace KafkaProducer
     {
         static void Main(string[] args)
         {
-            const string topicName = "test-topic";
+            const string topicName = "test-topic-reviews";
 
-            var config = new List<KeyValuePair<string, string>>
-                {new KeyValuePair<string, string>("bootstrap.servers", "localhost:9092")};
+            var config = new ProducerConfig
+            {
+                BootstrapServers = GeneralConfiguration.BootstrapServer
+            };
 
-            Action<DeliveryReport<string, string>> handler = r => 
-                Console.WriteLine(!r.Error.IsError
-                    ? $"Delivered message to {r.TopicPartitionOffset}"
-                    : $"Delivery Error: {r.Error.Reason}");
-            
-            using (var producer = new ProducerBuilder<string, string>(config)
-                .SetKeySerializer(Serializers.Utf8)
-                .SetValueSerializer(Serializers.Utf8)
+            using (var schemaRegistry = new CachedSchemaRegistryClient(SchemaConfiguration.SchemaRegistryConfig))
+            using (var producer = new ProducerBuilder<long, Review>(config)
+                .SetValueSerializer(new AvroSerializer<Review>(schemaRegistry))
                 .Build())
             {
                 Console.WriteLine("-----------------------------------------------------------------------");
@@ -60,18 +62,34 @@ namespace KafkaProducer
                         break;
                     }
 
-                    string key = null;
-                    var val = text;
-
-                    // split line if both key and value specified.
-                    var index = text.IndexOf(" ", StringComparison.Ordinal);
-                    if (index != -1)
+                    var review = new Review
                     {
-                        key = text.Substring(0, index);
-                        val = text.Substring(index + 1);
-                    }
+                        Id = Convert.ToInt64(new Random().Next()),
+                        Title = text,
+                        Rating = "5",
+                        Created = DateTime.UtcNow.Ticks,
+                        Modified = DateTime.UtcNow.Ticks,
+                        User = new User
+                        {
+                            Name = "Admin",
+                            Title = "Admin",
+                            DisplayName = "Admin"
+                        },
+                        Course = new Course
+                        {
+                            Id = 234356,
+                            Title = "Learn Kafka",
+                            Url = "localhost.dev"
+                        }
+                    };
 
-                    producer.Produce(topicName, new Message<string, string> {Key = key, Value = val}, handler);
+                    producer.ProduceAsync(topicName, new Message<long, Review> { Key = review.Id, Value = review })
+                        .ContinueWith(task => Console.WriteLine(
+                            task.IsFaulted
+                                ? $"error producing message: {task.Exception.Message}"
+                                : $"produced to: {task.Result.TopicPartitionOffset}"));
+
+                    Console.WriteLine();
                 }
 
                 producer.Flush();

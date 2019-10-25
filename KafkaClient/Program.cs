@@ -1,6 +1,11 @@
 ﻿using Confluent.Kafka;
 using System;
 using System.Threading;
+using Confluent.Kafka.SyncOverAsync;
+using Confluent.SchemaRegistry;
+using Confluent.SchemaRegistry.Serdes;
+using Kafka.Common.Configuration;
+using Udemy;
 
 namespace KafkaClient
 {
@@ -8,11 +13,11 @@ namespace KafkaClient
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            Console.WriteLine("Consumer starting up!");
 
             var config = new ConsumerConfig
             {
-                BootstrapServers = "localhost:9092",
+                BootstrapServers = GeneralConfiguration.BootstrapServer,
                 GroupId = "csharp-consumer",
                 EnableAutoCommit = false,
                 StatisticsIntervalMs = 60000,
@@ -20,9 +25,12 @@ namespace KafkaClient
                 AutoOffsetReset = AutoOffsetReset.Earliest
             };
 
-            using (var consumer = new ConsumerBuilder<Ignore, string>(config).Build())
+            using (var schemaRegistry = new CachedSchemaRegistryClient(SchemaConfiguration.SchemaRegistryConfig))
+            using (var consumer = new ConsumerBuilder<long, Review>(config)
+                .SetValueDeserializer(new AvroDeserializer<Review>(schemaRegistry).AsSyncOverAsync())
+                .Build())
             {
-                consumer.Subscribe("test-topic");
+                consumer.Subscribe("test-topic-reviews");
                 
                 var cts = new CancellationTokenSource();
                 Console.CancelKeyPress += (_, e) => {
@@ -37,7 +45,7 @@ namespace KafkaClient
                         try
                         {
                             var cr = consumer.Consume(cts.Token);
-                            Console.WriteLine($"Consumed message '{cr.Value}' at: '{cr.TopicPartitionOffset}'.");
+                            Console.WriteLine($"Consumed message '{cr.Value.Title}' at: '{cr.TopicPartitionOffset}'.");
 
                             // if you want to persist where you are in the stream use
                             // consumer.Commit(cr);
@@ -53,7 +61,6 @@ namespace KafkaClient
                     // Ensure the consumer leaves the group cleanly and final offsets are committed.
                     consumer.Close();
                 }
-                
             }
         }
     }
