@@ -1,4 +1,6 @@
 using System;
+using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using Kafka.Api.Models;
 using Kafka.Api.Services;
@@ -34,6 +36,31 @@ namespace Kafka.Api.Controllers
                 Course = new Course {Id = courseId, Title = "", Url = ""},
                 User = new User {DisplayName = review.UserName, Name = review.UserName, Title = "n/a"}
             });
+
+            return Ok(new { message = "Thank you for your review"});
+        }
+
+        [HttpPost("{courseId:long}/many")]
+        public async Task<IActionResult> PostMany(long courseId, [FromBody] ReviewData review)
+        {
+            Console.WriteLine($"CourseId is: {courseId}");
+
+            var reviewCounts = Enumerable.Range(0, 1000000).Select(x => new Review
+            {
+                Id = courseId,
+                Title = $"{review.Title} #{x}",
+                Content = review.Content,
+                Rating = review.Rating,
+                Created = DateTime.UtcNow.Ticks,
+                Modified = DateTime.UtcNow.Ticks,
+                Course = new Course {Id = courseId, Title = "", Url = ""},
+                User = new User {DisplayName = review.UserName, Name = review.UserName, Title = "n/a"}
+            });
+            var timer = new Stopwatch();
+            timer.Start();
+            await _reviewProducer.ProduceManyAsync(reviewCounts);
+            timer.Stop();
+            Console.WriteLine($"Time taken: {timer.Elapsed}");
 
             return Ok(new { message = "Thank you for your review"});
         }
