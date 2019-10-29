@@ -2,7 +2,6 @@ using System;
 using System.Threading.Tasks;
 using Kafka.Api.Models;
 using Kafka.Api.Services;
-using Kafka.Common.Configuration;
 using Microsoft.AspNetCore.Mvc;
 using Udemy;
 
@@ -12,11 +11,11 @@ namespace Kafka.Api.Controllers
     [Route("api/[controller]")]
     public class ReviewsController : ControllerBase
     {
-        private IKafkaProducerService _producerService;
+        private readonly IReviewProducer _reviewProducer;
         
         public ReviewsController()
         {
-            _producerService = new KafkaProducerService();
+            _reviewProducer = new ReviewProducer();
         }
 
         [HttpPost("{courseId:long}")]
@@ -24,7 +23,7 @@ namespace Kafka.Api.Controllers
         {
             Console.WriteLine($"CourseId is: {courseId}");
 
-            await _producerService.SendAsync(TopicNames.NewReviews, courseId, new Review
+            await _reviewProducer.ProduceAsync(new Review
             {
                 Id = courseId,
                 Title = review.Title,
