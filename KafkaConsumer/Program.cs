@@ -1,18 +1,15 @@
-﻿using Confluent.Kafka;
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Confluent.Kafka.SyncOverAsync;
-using Confluent.SchemaRegistry;
-using Confluent.SchemaRegistry.Serdes;
+using Confluent.Kafka.Admin;
 using Kafka.Common.Configuration;
-using Udemy;
+using Kafka.Common.Infrastructure;
 
 namespace KafkaClient
 {
     public static class Program
     {
-        private static void Main(string[] args)
+        private static async Task Main(string[] args)
         {
             Console.WriteLine("Consumer starting up!");
 
@@ -27,13 +24,29 @@ namespace KafkaClient
                     c.QueuedMinMessages = 1000000;
                 })
                 .SetProducerConfig(c => c.BootstrapServers = "localhost:9092")
-                .SetSchemaRegistryServer("localhost:8081");
+                .SetSchemaRegistryServer("localhost:8081")
+                .SetAdminConfig(c => c.BootstrapServers = "localhost:9092");
+
+            var adminClient = new BasicAdminClient(config);
+            try
+            {
+                Console.WriteLine("Deleting topic");
+                await adminClient.DeleteTopicAsync(TopicNames.NewReviews.GetDescription());
+                Console.WriteLine("Topic deleted");
+            }
+            catch (DeleteTopicsException e)
+            {
+                Console.WriteLine($"Failed to deleted topic Message: {e.Message}");
+            }
+            Console.WriteLine("Creating topic");
+            await adminClient.CreateTopicAsync(TopicNames.NewReviews.GetDescription());
             
             var consumer = new ReviewConsumer(config);
             const int nMessages = 1000000;
             
             var startTime = DateTime.UtcNow.Ticks;
             
+            Console.WriteLine("Consumer listening:");
             var cts = new CancellationTokenSource();
             consumer.Consume(cts, nMessages);
             

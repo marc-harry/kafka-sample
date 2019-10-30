@@ -40,7 +40,7 @@ namespace Kafka.Api.Controllers
         }
 
         [HttpPost("{courseId:long}/bulk")]
-        public IActionResult PostMany(long courseId, [FromBody] ReviewData review)
+        public async Task<IActionResult> PostMany(long courseId, [FromBody] ReviewData review)
         {
             Console.WriteLine($"CourseId is: {courseId}");
             var nMessages = 1000000;
@@ -58,7 +58,7 @@ namespace Kafka.Api.Controllers
             });
 
             var startTime = DateTime.UtcNow.Ticks;
-            _reviewProducer.ProduceMany(reviewCounts);
+            await _reviewProducer.ProduceManyAsync(reviewCounts);
             var duration = DateTime.UtcNow.Ticks - startTime;
             Console.WriteLine($"Consumed {nMessages} messages in {duration/10000.0:F0}ms");
             Console.WriteLine($"{(nMessages) / (duration/10000.0):F0}k msg/s");

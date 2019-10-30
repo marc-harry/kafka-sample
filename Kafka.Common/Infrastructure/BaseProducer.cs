@@ -110,7 +110,7 @@ namespace Kafka.Common.Infrastructure
                 }
 
                 Task.WaitAll(tasks);
-                producer.Flush(TimeSpan.FromMilliseconds(100));
+                producer.Flush(TimeSpan.FromMilliseconds(1000));
             }
         }
     }

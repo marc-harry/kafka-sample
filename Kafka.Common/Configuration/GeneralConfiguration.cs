@@ -15,11 +15,15 @@ namespace Kafka.Common.Configuration
 
         IGeneralConfiguration SetConsumerConfig(Action<ConsumerConfig> config);
 
+        IGeneralConfiguration SetAdminConfig(Action<AdminClientConfig> config);
+
         ProducerConfig GetProducerConfig();
 
         ConsumerConfig GetConsumerConfig();
 
         SchemaRegistryConfig GetSchemaRegistryConfig();
+
+        AdminClientConfig GetAdminConfig();
     }
     
     public class GeneralConfiguration : IGeneralConfiguration
@@ -27,6 +31,8 @@ namespace Kafka.Common.Configuration
         private ProducerConfig ProducerConfig { get; set; }
 
         private ConsumerConfig ConsumerConfig { get; set; }
+
+        private AdminClientConfig AdminClientConfig { get; set; }
         
         private SchemaRegistryConfig SchemaRegistryConfig =>
             new SchemaRegistryConfig {SchemaRegistryUrl = SchemaRegistryUrl};
@@ -59,6 +65,13 @@ namespace Kafka.Common.Configuration
             config(ConsumerConfig);
             return this;
         }
+        
+        public IGeneralConfiguration SetAdminConfig(Action<AdminClientConfig> config)
+        {
+            AdminClientConfig = AdminClientConfig ?? new AdminClientConfig();
+            config(AdminClientConfig);
+            return this;
+        }
 
         public ProducerConfig GetProducerConfig()
         {
@@ -73,6 +86,11 @@ namespace Kafka.Common.Configuration
         public SchemaRegistryConfig GetSchemaRegistryConfig()
         {
             return SchemaRegistryConfig;
+        }
+
+        public AdminClientConfig GetAdminConfig()
+        {
+            return AdminClientConfig;
         }
     }
 
