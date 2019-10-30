@@ -12,11 +12,11 @@ namespace Kafka.Common.Infrastructure
 {
     public abstract class BaseConsumer<TKey, TValue> : IBaseConsumer<TKey, TValue> where TValue : ISpecificRecord
     {
-        private readonly GeneralConfiguration _configuration;
+        private readonly IGeneralConfiguration _configuration;
         private readonly string _groupId;
         private readonly string _topicName;
 
-        protected BaseConsumer(GeneralConfiguration configuration, string groupId, string topicName)
+        protected BaseConsumer(IGeneralConfiguration configuration, string groupId, string topicName)
         {
             _configuration = configuration;
             _groupId = groupId;
@@ -25,10 +25,10 @@ namespace Kafka.Common.Infrastructure
         
         public async Task ConsumeAsync(CancellationTokenSource cancellationTokenSource)
         {
-            var config = _configuration.ConsumerConfig;
+            var config = _configuration.GetConsumerConfig();
             config.GroupId = _groupId;
 
-            using (var schemaRegistry = new CachedSchemaRegistryClient(_configuration.SchemaRegistryConfig))
+            using (var schemaRegistry = new CachedSchemaRegistryClient(_configuration.GetSchemaRegistryConfig()))
             using (var consumer = new ConsumerBuilder<TKey, TValue>(config)
                 .SetValueDeserializer(new AvroDeserializer<TValue>(schemaRegistry).AsSyncOverAsync())
                 .Build())
@@ -65,11 +65,10 @@ namespace Kafka.Common.Infrastructure
 
         public void Consume(CancellationTokenSource cancellationTokenSource, long? messageCount = null)
         {
-            var config = _configuration.ConsumerConfig;
+            var config = _configuration.GetConsumerConfig();
             config.GroupId = _groupId;
-            config.EnableAutoOffsetStore = false;
 
-            using (var schemaRegistry = new CachedSchemaRegistryClient(_configuration.SchemaRegistryConfig))
+            using (var schemaRegistry = new CachedSchemaRegistryClient(_configuration.GetSchemaRegistryConfig()))
             using (var consumer = new ConsumerBuilder<TKey, TValue>(config)
                 .SetValueDeserializer(new AvroDeserializer<TValue>(schemaRegistry).AsSyncOverAsync())
                 .Build())
@@ -92,7 +91,7 @@ namespace Kafka.Common.Infrastructure
                             HandleMessageAsync(cr);
                             count++;
 
-                            if (count == messageCount)
+                            if (count == messageCount - 1)
                             {
                                 cancellationTokenSource.Cancel();
                             }

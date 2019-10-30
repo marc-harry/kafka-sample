@@ -5,58 +5,99 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Kafka.Common.Configuration
 {
-    public class GeneralConfiguration
+    public interface IGeneralConfiguration
     {
-        public ProducerConfig ProducerConfig { get; set; }
+        IGeneralConfiguration SetBootstrapServer(string url);
 
-        public ConsumerConfig ConsumerConfig { get; set; }
+        IGeneralConfiguration SetSchemaRegistryServer(string url);
+
+        IGeneralConfiguration SetProducerConfig(Action<ProducerConfig> config);
+
+        IGeneralConfiguration SetConsumerConfig(Action<ConsumerConfig> config);
+
+        ProducerConfig GetProducerConfig();
+
+        ConsumerConfig GetConsumerConfig();
+
+        SchemaRegistryConfig GetSchemaRegistryConfig();
+    }
+    
+    public class GeneralConfiguration : IGeneralConfiguration
+    {
+        private ProducerConfig ProducerConfig { get; set; }
+
+        private ConsumerConfig ConsumerConfig { get; set; }
         
-        public SchemaRegistryConfig SchemaRegistryConfig =>
+        private SchemaRegistryConfig SchemaRegistryConfig =>
             new SchemaRegistryConfig {SchemaRegistryUrl = SchemaRegistryUrl};
 
         private string SchemaRegistryUrl { get; set; }
 
-        public GeneralConfiguration SetBootstrapServer(string url)
+        public IGeneralConfiguration SetBootstrapServer(string url)
         {
             ProducerConfig.BootstrapServers = url;
             ConsumerConfig.BootstrapServers = url;
             return this;
         }
         
-        public GeneralConfiguration SetSchemaRegistryServer(string url)
+        public IGeneralConfiguration SetSchemaRegistryServer(string url)
         {
             SchemaRegistryUrl = url;
             return this;
+        }
+        
+        public IGeneralConfiguration SetProducerConfig(Action<ProducerConfig> config)
+        {
+            ProducerConfig = ProducerConfig ?? new ProducerConfig();
+            config(ProducerConfig);
+            return this;
+        }
+        
+        public IGeneralConfiguration SetConsumerConfig(Action<ConsumerConfig> config)
+        {
+            ConsumerConfig = ConsumerConfig ?? new ConsumerConfig();
+            config(ConsumerConfig);
+            return this;
+        }
+
+        public ProducerConfig GetProducerConfig()
+        {
+            return ProducerConfig;
+        }
+
+        public ConsumerConfig GetConsumerConfig()
+        {
+            return ConsumerConfig;
+        }
+
+        public SchemaRegistryConfig GetSchemaRegistryConfig()
+        {
+            return SchemaRegistryConfig;
         }
     }
 
     public static class ConfigurationExtensions
     {
-        public static IServiceCollection AddKafka(this IServiceCollection services, Action<GeneralConfiguration> kafkaConfig)
+        public static IServiceCollection AddKafka(this IServiceCollection services, Action<IGeneralConfiguration> kafkaConfig)
         {
-            var config = new GeneralConfiguration
-            {
-                ConsumerConfig = new ConsumerConfig
+            var config = new GeneralConfiguration()
+                .SetProducerConfig(c => c.BootstrapServers = null)
+                .SetConsumerConfig(c =>
                 {
-                    BootstrapServers = null,
-                    StatisticsIntervalMs = 60000,
-                    SessionTimeoutMs = 6000
-                },
-                ProducerConfig = new ProducerConfig
-                {
-                    BootstrapServers = null
-                }
-            };
+                    c.BootstrapServers = null;
+                    c.StatisticsIntervalMs = 60000;
+                    c.SessionTimeoutMs = 6000;
+                });
 
             kafkaConfig(config);
 
-            if (string.IsNullOrWhiteSpace(config.ProducerConfig.BootstrapServers) ||
-                string.IsNullOrWhiteSpace(config.ConsumerConfig.BootstrapServers))
+            if (string.IsNullOrWhiteSpace(config.GetProducerConfig().BootstrapServers) ||
+                string.IsNullOrWhiteSpace(config.GetConsumerConfig().BootstrapServers))
             {
                 throw new Exception("Bootstrap servers url not provided!");
             }
 
-            if (string.IsNullOrWhiteSpace(config.SchemaRegistryConfig.SchemaRegistryUrl))
+            if (string.IsNullOrWhiteSpace(config.GetSchemaRegistryConfig().SchemaRegistryUrl))
             {
                 throw new Exception("Schema registry url not provided!");
             }

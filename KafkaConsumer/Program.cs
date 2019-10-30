@@ -16,23 +16,21 @@ namespace KafkaClient
         {
             Console.WriteLine("Consumer starting up!");
 
-            var config = new GeneralConfiguration
-            {
-                ConsumerConfig = new ConsumerConfig
+            var config = new GeneralConfiguration()
+                .SetConsumerConfig(c =>
                 {
-                    BootstrapServers = "localhost:9092",
-                    StatisticsIntervalMs = 60000,
-                    SessionTimeoutMs = 6000
-                },
-                ProducerConfig = new ProducerConfig
-                {
-                    BootstrapServers = "localhost:9092"
-                }
-            };
-            config.SetSchemaRegistryServer("localhost:8081");
+                    c.BootstrapServers = "localhost:9092";
+                    c.StatisticsIntervalMs = 60000;
+                    c.SessionTimeoutMs = 6000;
+                    c.EnableAutoOffsetStore = false;
+                    c.AutoCommitIntervalMs = 60000; // Every 1 minute
+                    c.QueuedMinMessages = 1000000;
+                })
+                .SetProducerConfig(c => c.BootstrapServers = "localhost:9092")
+                .SetSchemaRegistryServer("localhost:8081");
             
             var consumer = new ReviewConsumer(config);
-            var nMessages = 1000000;
+            const int nMessages = 1000000;
             
             var startTime = DateTime.UtcNow.Ticks;
             
@@ -41,8 +39,8 @@ namespace KafkaClient
             
             var duration = DateTime.UtcNow.Ticks - startTime;
 
-            Console.WriteLine($"Consumed {nMessages-1} messages in {duration/10000.0:F0}ms");
-            Console.WriteLine($"{(nMessages-1) / (duration/10000.0):F0}k msg/s");
+            Console.WriteLine($"Consumed {nMessages} messages in {duration/10000.0:F0}ms");
+            Console.WriteLine($"{(nMessages) / (duration/10000.0):F0}k msg/s");
         }
     }
 }

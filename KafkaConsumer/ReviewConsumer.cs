@@ -9,7 +9,7 @@ namespace KafkaClient
 {
     public class ReviewConsumer : BaseConsumer<long, Review>
     {
-        public ReviewConsumer(GeneralConfiguration configuration) : base(configuration, "review-consumer",
+        public ReviewConsumer(IGeneralConfiguration configuration) : base(configuration, "review-consumer",
             TopicNames.NewReviews.GetDescription())
         {
         }

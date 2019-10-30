@@ -15,5 +15,7 @@ namespace Kafka.Common.Infrastructure
         Task<DeliveryResult<TKey, TValue>> ProduceAsync(TValue message);
 
         Task<IEnumerable<DeliveryResult<TKey, TValue>>> ProduceManyAsync(IEnumerable<TValue> messages);
+
+        void ProduceMany(IEnumerable<TValue> messages);
     }
 }
