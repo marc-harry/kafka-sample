@@ -1,6 +1,7 @@
 using System;
 using Confluent.Kafka;
 using Confluent.SchemaRegistry;
+using Kafka.Common.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Kafka.Common.Configuration
@@ -121,6 +122,7 @@ namespace Kafka.Common.Configuration
             }
 
             services.AddSingleton(config);
+            services.AddSingleton<IBasicAdminClient, BasicAdminClient>();
             
             return services;
         }

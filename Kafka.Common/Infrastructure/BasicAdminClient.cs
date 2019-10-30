@@ -6,7 +6,7 @@ using Kafka.Common.Configuration;
 
 namespace Kafka.Common.Infrastructure
 {
-    public class BasicAdminClient
+    public class BasicAdminClient : IBasicAdminClient
     {
         private readonly IGeneralConfiguration _configuration;
 
