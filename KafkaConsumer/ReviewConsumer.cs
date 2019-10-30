@@ -9,11 +9,12 @@ namespace KafkaClient
 {
     public class ReviewConsumer : BaseConsumer<long, Review>
     {
-        public ReviewConsumer(string groupId) : base(groupId, TopicNames.NewReviews.GetDescription())
+        public ReviewConsumer(GeneralConfiguration configuration) : base(configuration, "review-consumer",
+            TopicNames.NewReviews.GetDescription())
         {
         }
 
-        protected override Task HandleMessage(ConsumeResult<long, Review> result)
+        protected override Task HandleMessageAsync(ConsumeResult<long, Review> result)
         {
             Console.WriteLine($"Consumed message '{result.Value.Title}' at: '{result.TopicPartitionOffset}'.");
             return Task.CompletedTask;

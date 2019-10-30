@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Avro.Specific;
 using Confluent.Kafka;
@@ -12,11 +11,13 @@ namespace Kafka.Common.Infrastructure
 {
     public abstract class BaseProducer<TKey, TValue> : IBaseProducer<TKey, TValue> where TValue : ISpecificRecord
     {
+        private readonly GeneralConfiguration _configuration;
         private readonly string _topicName;
         private readonly Func<TValue, TKey> _key;
         
-        protected BaseProducer(string topicName, Func<TValue, TKey> keyAccessor = null)
+        protected BaseProducer(GeneralConfiguration configuration, string topicName, Func<TValue, TKey> keyAccessor = null)
         {
+            _configuration = configuration;
             _topicName = topicName;
             if (typeof(TKey) != typeof(Null))
             {
@@ -31,13 +32,8 @@ namespace Kafka.Common.Infrastructure
         /// <returns cref="DeliveryResult{TKey,TValue}"></returns>
         public async Task<DeliveryResult<TKey, TValue>> ProduceAsync(TValue message)
         {
-            var config = new ProducerConfig
-            {
-                BootstrapServers = GeneralConfiguration.BootstrapServer
-            };
-
-            using (var schemaRegistry = new CachedSchemaRegistryClient(SchemaConfiguration.SchemaRegistryConfig))
-            using (var producer = new ProducerBuilder<TKey, TValue>(config)
+            using (var schemaRegistry = new CachedSchemaRegistryClient(_configuration.SchemaRegistryConfig))
+            using (var producer = new ProducerBuilder<TKey, TValue>(_configuration.ProducerConfig)
                 .SetValueSerializer(new AvroSerializer<TValue>(schemaRegistry))
                 .Build())
             {
@@ -57,17 +53,14 @@ namespace Kafka.Common.Infrastructure
         
         public async Task<IEnumerable<DeliveryResult<TKey, TValue>>> ProduceManyAsync(IEnumerable<TValue> messages)
         {
-            var config = new ProducerConfig
-            {
-                BootstrapServers = GeneralConfiguration.BootstrapServer,
-                QueueBufferingMaxMessages = 2000000,
-                MessageSendMaxRetries = 3,
-                RetryBackoffMs = 500,
-                LingerMs = 5
-            };
+            var config = _configuration.ProducerConfig;
+            config.QueueBufferingMaxMessages = 2000000;
+            config.MessageSendMaxRetries = 3;
+            config.RetryBackoffMs = 500;
+            config.LingerMs = 5;
 
             DeliveryResult<TKey, TValue>[] reports;
-            using (var schemaRegistry = new CachedSchemaRegistryClient(SchemaConfiguration.SchemaRegistryConfig))
+            using (var schemaRegistry = new CachedSchemaRegistryClient(_configuration.SchemaRegistryConfig))
             using (var producer = new ProducerBuilder<TKey, TValue>(config)
                 .SetValueSerializer(new AvroSerializer<TValue>(schemaRegistry))
                 .Build())

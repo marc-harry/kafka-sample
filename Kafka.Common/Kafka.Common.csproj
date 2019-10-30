@@ -9,6 +9,7 @@
       <PackageReference Include="Confluent.Kafka" Version="1.2.1" />
       <PackageReference Include="Confluent.SchemaRegistry" Version="1.2.1" />
       <PackageReference Include="Confluent.SchemaRegistry.Serdes" Version="1.2.1" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.0.0" />
     </ItemGroup>
 
 </Project>

@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Confluent.Kafka;
+using Kafka.Api.Services;
+using Kafka.Common.Configuration;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -25,6 +28,11 @@ namespace Kafka.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddKafka(c => c
+                .SetBootstrapServer("localhost:9092")
+                .SetSchemaRegistryServer("localhost:8081"));
+            services.AddScoped<IReviewProducer, ReviewProducer>();
+            
             services.AddControllers();
         }
 

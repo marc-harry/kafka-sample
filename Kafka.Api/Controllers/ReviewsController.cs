@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Kafka.Api.Models;
@@ -15,9 +14,9 @@ namespace Kafka.Api.Controllers
     {
         private readonly IReviewProducer _reviewProducer;
         
-        public ReviewsController()
+        public ReviewsController(IReviewProducer reviewProducer)
         {
-            _reviewProducer = new ReviewProducer();
+            _reviewProducer = reviewProducer;
         }
 
         [HttpPost("{courseId:long}")]
@@ -40,12 +39,13 @@ namespace Kafka.Api.Controllers
             return Ok(new { message = "Thank you for your review"});
         }
 
-        [HttpPost("{courseId:long}/many")]
+        [HttpPost("{courseId:long}/bulk")]
         public async Task<IActionResult> PostMany(long courseId, [FromBody] ReviewData review)
         {
             Console.WriteLine($"CourseId is: {courseId}");
-
-            var reviewCounts = Enumerable.Range(0, 1000000).Select(x => new Review
+            var nMessages = 1000000;
+            
+            var reviewCounts = Enumerable.Range(0, nMessages).Select(x => new Review
             {
                 Id = courseId,
                 Title = $"{review.Title} #{x}",
@@ -56,11 +56,12 @@ namespace Kafka.Api.Controllers
                 Course = new Course {Id = courseId, Title = "", Url = ""},
                 User = new User {DisplayName = review.UserName, Name = review.UserName, Title = "n/a"}
             });
-            var timer = new Stopwatch();
-            timer.Start();
+
+            var startTime = DateTime.UtcNow.Ticks;
             await _reviewProducer.ProduceManyAsync(reviewCounts);
-            timer.Stop();
-            Console.WriteLine($"Time taken: {timer.Elapsed}");
+            var duration = DateTime.UtcNow.Ticks - startTime;
+            Console.WriteLine($"Consumed {nMessages} messages in {duration/10000.0:F0}ms");
+            Console.WriteLine($"{(nMessages) / (duration/10000.0):F0}k msg/s");
 
             return Ok(new { message = "Thank you for your review"});
         }

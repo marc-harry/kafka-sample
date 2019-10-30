@@ -12,13 +12,37 @@ namespace KafkaClient
 {
     public static class Program
     {
-        private static async Task Main(string[] args)
+        private static void Main(string[] args)
         {
             Console.WriteLine("Consumer starting up!");
 
-            var consumer = new ReviewConsumer("review-consumer");
+            var config = new GeneralConfiguration
+            {
+                ConsumerConfig = new ConsumerConfig
+                {
+                    BootstrapServers = "localhost:9092",
+                    StatisticsIntervalMs = 60000,
+                    SessionTimeoutMs = 6000
+                },
+                ProducerConfig = new ProducerConfig
+                {
+                    BootstrapServers = "localhost:9092"
+                }
+            };
+            config.SetSchemaRegistryServer("localhost:8081");
+            
+            var consumer = new ReviewConsumer(config);
+            var nMessages = 1000000;
+            
+            var startTime = DateTime.UtcNow.Ticks;
+            
+            var cts = new CancellationTokenSource();
+            consumer.Consume(cts, nMessages);
+            
+            var duration = DateTime.UtcNow.Ticks - startTime;
 
-            await consumer.ConsumeAsync();
+            Console.WriteLine($"Consumed {nMessages-1} messages in {duration/10000.0:F0}ms");
+            Console.WriteLine($"{(nMessages-1) / (duration/10000.0):F0}k msg/s");
         }
     }
 }

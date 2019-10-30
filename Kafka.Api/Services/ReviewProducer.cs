@@ -6,7 +6,8 @@ namespace Kafka.Api.Services
 {
     public class ReviewProducer : BaseProducer<long, Review>, IReviewProducer
     {
-        public ReviewProducer() : base(TopicNames.NewReviews.GetDescription(), r => r.Id)
+        public ReviewProducer(GeneralConfiguration configuration) : base(configuration,
+            TopicNames.NewReviews.GetDescription(), r => r.Id)
         {
         }
     }
