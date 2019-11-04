@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Confluent.Kafka;
 using Kafka.Api.Services;
-using Kafka.Common.Configuration;
+using MHCore.Kafka.Configuration;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;

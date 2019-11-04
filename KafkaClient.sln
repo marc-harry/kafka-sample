@@ -11,6 +11,7 @@ ProjectSection(SolutionItems) = preProject
 	KafkaResources\udemy-review.avsc = KafkaResources\udemy-review.avsc
 	README.md = README.md
 	KafkaResources\generate-avro.ps1 = KafkaResources\generate-avro.ps1
+	KafkaResources\streams.ksql = KafkaResources\streams.ksql
 EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kafka.Common", "Kafka.Common\Kafka.Common.csproj", "{55C32126-D779-4E25-9995-3AE2421A0641}"

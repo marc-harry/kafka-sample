@@ -1,0 +1,3 @@
+CREATE STREAM NEW_REVIEWS (Id bigint, Rating varchar) WITH (kafka_topic='newreviews', value_format='AVRO');
+
+CREATE STREAM TOP_REVIEWS AS SELECT * FROM NEW_REVIEWS WHERE RATING = '5' OR  RATING = '4';

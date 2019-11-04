@@ -3,7 +3,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Confluent.Kafka.Admin;
 using Kafka.Common.Configuration;
-using Kafka.Common.Infrastructure;
+using MHCore.Kafka.Configuration;
+using MHCore.Kafka.Infrastructure;
 
 namespace KafkaClient
 {
@@ -48,6 +49,11 @@ namespace KafkaClient
             
             Console.WriteLine("Consumer listening:");
             var cts = new CancellationTokenSource();
+            Console.CancelKeyPress += (_, e) => {
+                e.Cancel = true; // prevent the process from terminating.
+                cts.Cancel();
+            };
+
             consumer.Consume(cts, nMessages);
             
             var duration = DateTime.UtcNow.Ticks - startTime;

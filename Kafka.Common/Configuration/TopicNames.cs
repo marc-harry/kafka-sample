@@ -4,11 +4,11 @@ namespace Kafka.Common.Configuration
 {
     public enum TopicNames
     {
-        [Description("new-reviews")]
+        [Description("newreviews")]
         NewReviews,
-        [Description("verified-reviews")]
+        [Description("verifiedreviews")]
         VerifiedReviews,
-        [Description("review-counts")]
+        [Description("reviewcounts")]
         ReviewCounts
     }
 }
