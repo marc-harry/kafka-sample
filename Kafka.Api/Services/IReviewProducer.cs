@@ -1,4 +1,4 @@
-using Kafka.Common.Infrastructure;
+using MHCore.Kafka.Infrastructure;
 using Udemy;
 
 namespace Kafka.Api.Services

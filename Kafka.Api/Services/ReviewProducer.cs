@@ -1,5 +1,6 @@
 using Kafka.Common.Configuration;
-using Kafka.Common.Infrastructure;
+using MHCore.Kafka.Configuration;
+using MHCore.Kafka.Infrastructure;
 using Udemy;
 
 namespace Kafka.Api.Services
