@@ -3,8 +3,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Kafka.Api.Models;
 using Kafka.Api.Services;
+using Kafka.Common.Json;
 using Microsoft.AspNetCore.Mvc;
-using Udemy;
 
 namespace Kafka.Api.Controllers
 {
@@ -13,10 +13,12 @@ namespace Kafka.Api.Controllers
     public class ReviewsController : ControllerBase
     {
         private readonly IReviewProducer _reviewProducer;
-        
-        public ReviewsController(IReviewProducer reviewProducer)
+        private readonly IManyEntityProducer _manyEntityProducer;
+
+        public ReviewsController(IReviewProducer reviewProducer, IManyEntityProducer manyEntityProducer)
         {
             _reviewProducer = reviewProducer;
+            _manyEntityProducer = manyEntityProducer;
         }
 
         [HttpPost("{courseId:long}")]
@@ -24,19 +26,29 @@ namespace Kafka.Api.Controllers
         {
             Console.WriteLine($"CourseId is: {courseId}");
 
-            await _reviewProducer.ProduceAsync(new Review
+            await _manyEntityProducer.ProduceAsync(courseId, new ReviewEntity
             {
                 Id = courseId,
                 Title = review.Title,
                 Content = review.Content,
-                Rating = review.Rating,
-                Created = DateTime.UtcNow.Ticks,
-                Modified = DateTime.UtcNow.Ticks,
-                Course = new Course {Id = courseId, Title = "", Url = ""},
-                User = new User {DisplayName = review.UserName, Name = review.UserName, Title = "n/a"}
+                Rating = review.Rating
             });
 
             return Ok(new { message = "Thank you for your review"});
+        }
+        
+        [HttpPost("company/{id:long}")]
+        public async Task<IActionResult> PostCompany(long id)
+        {
+            Console.WriteLine($"CompanyId is: {id}");
+
+            await _manyEntityProducer.ProduceAsync(id, new CreateCompanyEvent
+            {
+                Id = id,
+                Name = Guid.NewGuid().ToString()
+            });
+
+            return Ok(new { message = "Thank you for creating company"});
         }
 
         [HttpPost("{courseId:long}/bulk")]
@@ -45,16 +57,12 @@ namespace Kafka.Api.Controllers
             Console.WriteLine($"CourseId is: {courseId}");
             var nMessages = 1000000;
             
-            var reviewCounts = Enumerable.Range(0, nMessages).Select(x => new Review
+            var reviewCounts = Enumerable.Range(0, nMessages).Select(x => new ReviewEntity
             {
                 Id = courseId,
                 Title = $"{review.Title} #{x}",
                 Content = review.Content,
-                Rating = review.Rating,
-                Created = DateTime.UtcNow.Ticks,
-                Modified = DateTime.UtcNow.Ticks,
-                Course = new Course {Id = courseId, Title = "", Url = ""},
-                User = new User {DisplayName = review.UserName, Name = review.UserName, Title = "n/a"}
+                Rating = review.Rating
             });
 
             var startTime = DateTime.UtcNow.Ticks;

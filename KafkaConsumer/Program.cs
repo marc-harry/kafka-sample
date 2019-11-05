@@ -5,6 +5,7 @@ using Confluent.Kafka.Admin;
 using Kafka.Common.Configuration;
 using MHCore.Kafka.Configuration;
 using MHCore.Kafka.Infrastructure;
+using Newtonsoft.Json;
 
 namespace KafkaClient
 {
@@ -26,40 +27,58 @@ namespace KafkaClient
                 })
                 .SetProducerConfig(c => c.BootstrapServers = "localhost:9092")
                 .SetSchemaRegistryServer("localhost:8081")
-                .SetAdminConfig(c => c.BootstrapServers = "localhost:9092");
+                .SetAdminConfig(c => c.BootstrapServers = "localhost:9092")
+                .SetSerializerSettings(c =>
+                {
+                    c.TypeNameHandling = TypeNameHandling.None;
+                    c.Formatting = Formatting.None;
+                });
 
             var adminClient = new BasicAdminClient(config);
-            try
-            {
-                Console.WriteLine("Deleting topic");
-                await adminClient.DeleteTopicAsync(TopicNames.NewReviews.GetDescription());
-                Console.WriteLine("Topic deleted");
-            }
-            catch (DeleteTopicsException e)
-            {
-                Console.WriteLine($"Failed to deleted topic Message: {e.Message}");
-            }
-            Console.WriteLine("Creating topic");
-            await adminClient.CreateTopicAsync(TopicNames.NewReviews.GetDescription());
-            
-            var consumer = new ReviewConsumer(config);
-            const int nMessages = 1000000;
-            
-            var startTime = DateTime.UtcNow.Ticks;
-            
-            Console.WriteLine("Consumer listening:");
+            await SetupTopic(adminClient, TopicNames.NewReviews.GetDescription());
+            await SetupTopic(adminClient, "multi_entities");
+
             var cts = new CancellationTokenSource();
             Console.CancelKeyPress += (_, e) => {
                 e.Cancel = true; // prevent the process from terminating.
                 cts.Cancel();
             };
 
-            consumer.Consume(cts, nMessages);
-            
-            var duration = DateTime.UtcNow.Ticks - startTime;
+            var taskOne = StartJsonConsumer(config, cts);
+            var taskTwo = StartMultiJsonConsumer(config, cts);
 
-            Console.WriteLine($"Consumed {nMessages} messages in {duration/10000.0:F0}ms");
-            Console.WriteLine($"{(nMessages) / (duration/10000.0):F0}k msg/s");
+            await Task.WhenAll(taskOne, taskTwo);
+        }
+
+        private static Task StartJsonConsumer(IGeneralConfiguration config, CancellationTokenSource cts)
+        {
+            var consumer = new JsonReviewConsumer(config);
+            Console.WriteLine("Consumer listening:");
+            return Task.Run(() => consumer.ConsumeAsync(cts));
+        }
+        
+        private static Task StartMultiJsonConsumer(IGeneralConfiguration config, CancellationTokenSource cts)
+        {
+            var consumer = new ManyJsonConsumer(config);
+            Console.WriteLine("ManyConsumer listening:");
+            return Task.Run(() => consumer.ConsumeAsync(cts));
+        }
+
+        private static async Task SetupTopic(IBasicAdminClient adminClient, string topicName)
+        {
+            try
+            {
+                Console.WriteLine($"Deleting topic - {topicName}");
+                await adminClient.DeleteTopicAsync(topicName, null, null);
+                Console.WriteLine($"Topic deleted - {topicName}");
+            }
+            catch (DeleteTopicsException e)
+            {
+                Console.WriteLine($"Failed to deleted topic Message: {e.Message}");
+            }
+
+            Console.WriteLine($"Creating topic - {topicName}");
+            await adminClient.CreateTopicAsync(topicName);
         }
     }
 }

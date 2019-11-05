@@ -7,11 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MHCore.Kafka" Version="1.0.54" />
+    <ProjectReference Include="..\Kafka.Common\Kafka.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Kafka.Common\Kafka.Common.csproj" />
+    <PackageReference Include="MHCore.Kafka" Version="1.0.62" />
   </ItemGroup>
 
 </Project>

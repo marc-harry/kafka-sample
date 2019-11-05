@@ -32,6 +32,7 @@ namespace Kafka.Api
                 .SetBootstrapServer("localhost:9092")
                 .SetSchemaRegistryServer("localhost:8081"));
             services.AddScoped<IReviewProducer, ReviewProducer>();
+            services.AddScoped<IManyEntityProducer, ManyEntityProducer>();
             
             services.AddControllers();
         }
