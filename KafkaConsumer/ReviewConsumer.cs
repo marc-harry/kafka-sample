@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Confluent.Kafka;
 using Kafka.Common.Configuration;
 using Kafka.Common.Json;
+using MediatR;
 using MHCore.Kafka.Configuration;
 using MHCore.Kafka.Infrastructure;
 using MHCore.Kafka.Infrastructure.Json;
@@ -47,6 +48,13 @@ namespace KafkaClient
 
         protected override Task HandleMessageAsync(ConsumeResult<long, object> result)
         {
+            // Either handle messages by sending to registered mediatr handlers
+            if (result.Value is IRequest request)
+            { 
+                return Program.Mediator.Send(request);
+            }
+
+            // Or manually handle events by finding type and handling
             switch (result.Value)
             {
                 case CreateCompanyEvent companyEvent:

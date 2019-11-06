@@ -1,6 +1,8 @@
+using MediatR;
+
 namespace Kafka.Common.Json
 {
-    public class CreateCompanyEvent
+    public class CreateCompanyEvent : IRequest
     {
         public long Id { get; set; }
 

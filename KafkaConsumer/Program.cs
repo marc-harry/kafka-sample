@@ -3,17 +3,28 @@ using System.Threading;
 using System.Threading.Tasks;
 using Confluent.Kafka.Admin;
 using Kafka.Common.Configuration;
+using Kafka.Common.Handlers;
+using MediatR;
 using MHCore.Kafka.Configuration;
 using MHCore.Kafka.Infrastructure;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 
 namespace KafkaClient
 {
     public static class Program
     {
+        public static IMediator Mediator;
+        
         private static async Task Main(string[] args)
         {
             Console.WriteLine("Consumer starting up!");
+
+            var serviceProvider = new ServiceCollection()
+                .AddMediatR(typeof(CreateAccountHandler).Assembly)
+                .BuildServiceProvider();
+
+            Mediator = serviceProvider.GetService<IMediator>();
 
             var config = new GeneralConfiguration()
                 .SetConsumerConfig(c =>
@@ -69,7 +80,7 @@ namespace KafkaClient
             try
             {
                 Console.WriteLine($"Deleting topic - {topicName}");
-                await adminClient.DeleteTopicAsync(topicName, null, null);
+                await adminClient.DeleteTopicAsync(topicName, TimeSpan.FromSeconds(5), null);
                 Console.WriteLine($"Topic deleted - {topicName}");
             }
             catch (DeleteTopicsException e)
