@@ -14,8 +14,6 @@ namespace KafkaClient
 {
     public static class Program
     {
-        public static IMediator Mediator;
-        
         private static async Task Main(string[] args)
         {
             Console.WriteLine("Consumer starting up!");
@@ -23,8 +21,6 @@ namespace KafkaClient
             var serviceProvider = new ServiceCollection()
                 .AddMediatR(typeof(CreateAccountHandler).Assembly)
                 .BuildServiceProvider();
-
-            Mediator = serviceProvider.GetService<IMediator>();
 
             var config = new GeneralConfiguration()
                 .SetConsumerConfig(c =>
@@ -41,7 +37,7 @@ namespace KafkaClient
                 .SetAdminConfig(c => c.BootstrapServers = "localhost:9092")
                 .SetSerializerSettings(c =>
                 {
-                    c.TypeNameHandling = TypeNameHandling.None;
+                    c.TypeNameHandling = TypeNameHandling.All;
                     c.Formatting = Formatting.None;
                 });
 
@@ -56,9 +52,10 @@ namespace KafkaClient
             };
 
             var taskOne = StartJsonConsumer(config, cts);
-            var taskTwo = StartMultiJsonConsumer(config, cts);
+            var taskTwo = StartMultiJsonConsumer(config, serviceProvider, cts);
+            var taskThree = StartTopReviewsConsumer(config, cts);
 
-            await Task.WhenAll(taskOne, taskTwo);
+            await Task.WhenAll(taskOne, taskTwo, taskThree);
         }
 
         private static Task StartJsonConsumer(IGeneralConfiguration config, CancellationTokenSource cts)
@@ -68,10 +65,17 @@ namespace KafkaClient
             return Task.Run(() => consumer.ConsumeAsync(cts));
         }
         
-        private static Task StartMultiJsonConsumer(IGeneralConfiguration config, CancellationTokenSource cts)
+        private static Task StartMultiJsonConsumer(IGeneralConfiguration config, IServiceProvider serviceProvider, CancellationTokenSource cts)
         {
-            var consumer = new ManyJsonConsumer(config);
+            var consumer = new ManyJsonConsumer(config, serviceProvider.GetService<IMediator>());
             Console.WriteLine("ManyConsumer listening:");
+            return Task.Run(() => consumer.ConsumeAsync(cts));
+        }
+        
+        private static Task StartTopReviewsConsumer(IGeneralConfiguration config, CancellationTokenSource cts)
+        {
+            var consumer = new TopReviewConsumer(config);
+            Console.WriteLine("TopReviewConsumer listening:");
             return Task.Run(() => consumer.ConsumeAsync(cts));
         }
 

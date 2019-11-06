@@ -9,7 +9,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="MHCore.Kafka" Version="1.0.62" />
+      <PackageReference Include="MHCore.Kafka" Version="1.0.63" />
     </ItemGroup>
 
 </Project>

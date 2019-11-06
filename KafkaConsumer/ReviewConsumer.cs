@@ -27,41 +27,44 @@ namespace KafkaClient
     
     public class JsonReviewConsumer : SingleTypeJsonConsumer<long, ReviewEntity>
     {
-        public JsonReviewConsumer(IGeneralConfiguration configuration) : base(configuration, "review-consumer",
+        public JsonReviewConsumer(IGeneralConfiguration configuration) : base(configuration, "review-consumer1",
             new [] { TopicNames.NewReviews.GetDescription() })
         {
         }
 
         protected override Task HandleMessageAsync(ConsumeResult<long, ReviewEntity> result)
         {
-            Console.WriteLine($"Consumed message: '{result.Value.Title}' at: '{result.TopicPartitionOffset}'.");
+            Console.WriteLine($"Consumed message: '{result.Value.Title}' at: '{result.TopicPartitionOffset}' on topic: {result.Topic}.");
             return Task.CompletedTask;
         }
     }
     
     public class ManyJsonConsumer : MultiTypeJsonConsumer<long>
     {
-        public ManyJsonConsumer(IGeneralConfiguration configuration) : base(configuration, "review-consumer",
+        private readonly IMediator _mediator;
+
+        public ManyJsonConsumer(IGeneralConfiguration configuration, IMediator mediator) : base(configuration, "review-consumer2",
             new [] { "multi_entities" })
         {
+            _mediator = mediator;
         }
 
         protected override Task HandleMessageAsync(ConsumeResult<long, object> result)
         {
-            // Either handle messages by sending to registered mediatr handlers
+            // Either handle messages by sending to registered mediator handlers
             if (result.Value is IRequest request)
             { 
-                return Program.Mediator.Send(request);
+                return _mediator.Send(request);
             }
 
             // Or manually handle events by finding type and handling
             switch (result.Value)
             {
                 case CreateCompanyEvent companyEvent:
-                    Console.WriteLine($"Consumed message: '{companyEvent.Name}' at: '{result.TopicPartitionOffset}'.");
+                    Console.WriteLine($"Consumed message: '{companyEvent.Name}' at: '{result.TopicPartitionOffset}' on topic: {result.Topic}.");
                     break;
                 case ReviewEntity review:
-                    Console.WriteLine($"Consumed message: '{review.Title}' at: '{result.TopicPartitionOffset}'.");
+                    Console.WriteLine($"Consumed message: '{review.Title}' at: '{result.TopicPartitionOffset}' on topic: {result.Topic}.");
                     break;
             }
 
@@ -71,14 +74,14 @@ namespace KafkaClient
     
     public class TopReviewConsumer : SingleTypeJsonConsumer<Ignore, ReviewEntity>
     {
-        public TopReviewConsumer(IGeneralConfiguration configuration) : base(configuration, "review-consumer",
+        public TopReviewConsumer(IGeneralConfiguration configuration) : base(configuration, "review-consumer3",
             new [] { "TOP_REVIEWS" })
         {
         }
 
         protected override Task HandleMessageAsync(ConsumeResult<Ignore, ReviewEntity> result)
         {
-            Console.WriteLine($"Consumed message: '{result.Value.Title}' at: '{result.TopicPartitionOffset}'.");
+            Console.WriteLine($"Consumed message: '{result.Value.Title}' at: '{result.TopicPartitionOffset}' on topic: {result.Topic}.");
             return Task.CompletedTask;
         }
     }
