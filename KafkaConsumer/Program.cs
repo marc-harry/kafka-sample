@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Confluent.Kafka;
 using Confluent.Kafka.Admin;
 using Kafka.Common.Configuration;
 using Kafka.Common.Handlers;
@@ -37,13 +38,14 @@ namespace KafkaClient
                 .SetAdminConfig(c => c.BootstrapServers = "localhost:9092")
                 .SetSerializerSettings(c =>
                 {
-                    c.TypeNameHandling = TypeNameHandling.All;
+                    c.TypeNameHandling = TypeNameHandling.None;
                     c.Formatting = Formatting.None;
                 });
 
             var adminClient = new BasicAdminClient(config);
-            await SetupTopic(adminClient, TopicNames.NewReviews.GetDescription());
-            await SetupTopic(adminClient, "multi_entities");
+
+//            await SetupTopic(adminClient, TopicNames.NewReviews.GetDescription());
+//            await SetupTopic(adminClient, "multi_entities");
 
             var cts = new CancellationTokenSource();
             Console.CancelKeyPress += (_, e) => {
@@ -74,6 +76,21 @@ namespace KafkaClient
         
         private static Task StartTopReviewsConsumer(IGeneralConfiguration config, CancellationTokenSource cts)
         {
+//            var specificConfig = new GeneralConfiguration()
+//                .SetConsumerConfig(c =>
+//                {
+//                    c.BootstrapServers = "localhost:9092";
+//                    c.StatisticsIntervalMs = 60000;
+//                    c.SessionTimeoutMs = 6000;
+//                    c.EnableAutoOffsetStore = false;
+//                    c.AutoCommitIntervalMs = 60000; // Every 1 minute
+//                    c.QueuedMinMessages = 1000000;
+//                    c.AutoOffsetReset = AutoOffsetReset.Earliest;
+//                }).SetSerializerSettings(c =>
+//                {
+//                    c.TypeNameHandling = TypeNameHandling.None;
+//                    c.Formatting = Formatting.None;
+//                });
             var consumer = new TopReviewConsumer(config);
             Console.WriteLine("TopReviewConsumer listening:");
             return Task.Run(() => consumer.ConsumeAsync(cts));

@@ -81,7 +81,7 @@ namespace KafkaClient
 
         protected override Task HandleMessageAsync(ConsumeResult<Ignore, ReviewEntity> result)
         {
-            Console.WriteLine($"Consumed message: '{result.Value.Title}' at: '{result.TopicPartitionOffset}' on topic: {result.Topic}.");
+            Console.WriteLine($"Consumed message: '{result.Value.Rating}' at: '{result.TopicPartitionOffset}' on topic: {result.Topic}.");
             return Task.CompletedTask;
         }
     }
